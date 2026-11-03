@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Riverbend Club Quiz</title>
+  <style>
+    :root {
+      --bg: #f4ead8;
+      --bg-2: #efe3cc;
+      --panel: #fffaf1;
+      --line: #d4c4a8;
+      --text: #1a2a4a;
+      --muted: #4d5d78;
+      --navy: #16325c;
+      --blue: #2b5ea8;
+      --blue-2: #1f4d93;
+      --cream: #fff8ea;
+      --good: #1f6b3a;
+      --good-bg: #e5f4ea;
+      --bad: #9b2c2c;
+      --bad-bg: #fde8e8;
+      --gold: #c9892b;
+      --focus: #16325c;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Georgia", "Iowan Old Style", "Times New Roman", serif;
+      background:
+        radial-gradient(900px 420px at 0% 0%, #f7d9a8 0%, transparent 55%),
+        radial-gradient(700px 380px at 100% 0%, #c9d7ef 0%, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .wrap {
+      width: min(760px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    header.app {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: var(--navy);
+    }
+    .title p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    }
+    .book-icon {
+      width: 46px;
+      height: 40px;
+      flex: 0 0 46px;
+      display: block;
+    }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--navy);
+      border-radius: 12px;
+      padding: 10px 14px;
+      min-height: 44px;
+    }
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .btn.primary {
+      background: linear-gradient(180deg, var(--blue), var(--blue-2));
+      border-color: #8fb0e3;
+      color: #fff;
+      font-weight: 700;
+    }
+    .btn.danger {
+      background: #f7e8e4;
+      border-color: #e0b4a8;
+      color: #7a2e24;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 94%, white);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 18px 40px #5a46301a;
+    }
+
+    .hidden { display: none !important; }
+
+    .intro h2 { margin: 0 0 8px; color: var(--navy); }
+    .intro p, .rules { color: var(--muted); }
+    .rules { margin: 0 0 18px; padding-left: 18px; }
+    .note {
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.9rem;
+      color: var(--muted);
+      background: var(--cream);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 0 0 18px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      margin-bottom: 14px;
+    }
+    .chip {
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--navy);
+      font-weight: 650;
+    }
+
+    .question {
+      margin: 0 0 16px;
+      font-size: 1.28rem;
+      color: var(--navy);
+    }
+
+    .answers {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .answer {
+      text-align: left;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-height: 52px;
+    }
+    .letter {
+      flex: 0 0 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 800;
+      background: #e8eef8;
+      color: var(--navy);
+    }
+    .answer.correct {
+      background: var(--good-bg);
+      border-color: var(--good);
+      color: var(--good);
+    }
+    .answer.wrong {
+      background: var(--bad-bg);
+      border-color: var(--bad);
+      color: var(--bad);
+    }
+    .mark {
+      margin-left: auto;
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      font-weight: 800;
+    }
+
+    .feedback {
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      background: var(--cream);
+      border-left: 4px solid var(--blue);
+      padding: 10px 12px;
+      border-radius: 8px;
+      min-height: 3.2em;
+      margin-bottom: 14px;
+    }
+    .feedback.good { border-left-color: var(--good); background: var(--good-bg); }
+    .feedback.bad { border-left-color: var(--bad); background: var(--bad-bg); }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: #16325ccc;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 20;
+    }
+    .overlay .panel { width: min(560px, 100%); }
+
+    .sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="title">
+        <svg class="book-icon" viewBox="0 0 46 40" aria-hidden="true">
+          <path d="M23 6c-3-2-8-3-14-3H6v30h4c6 0 10 1 13 3 3-2 7-3 13-3h4V3h-3c-6 0-11 1-14 3z" fill="#16325c"/>
+          <path d="M23 6v27" stroke="#c9892b" stroke-width="2.5" fill="none"/>
+          <path d="M10 12h8M10 18h8M10 24h6M28 12h8M28 18h8M30 24h6" stroke="#fff8ea" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <h1>Riverbend Club Quiz</h1>
+          <p>Five questions about a fictional reading club.</p>
+        </div>
+      </div>
+      <div class="actions" id="header-actions">
+        <a class="btn" href="../../index.html">ATO Home</a>
+      </div>
+    </header>
+
+    <p class="sr" id="live" aria-live="polite"></p>
+
+    <section id="screen-intro" class="panel intro">
+      <h2>How to play</h2>
+      <p>Answer five questions about the fictional Riverbend Reading Club. Each question has three choices. You get one point for a correct answer and zero for a wrong one.</p>
+      <ul class="rules">
+        <li>Start begins question 1 with a score of zero.</li>
+        <li>Choose one answer. That question then locks; a second click does not change the score.</li>
+        <li>Read the short explanation, then use Next.</li>
+        <li>After question 5, Next shows your score out of 5.</li>
+        <li>Play again returns to question 1 with zero points.</li>
+      </ul>
+      <p class="note">This is a classroom exercise. The club, gathering, and website it describes are fictional.</p>
+      <button class="btn primary" id="btn-start" type="button">Start</button>
+    </section>
+
+    <section id="screen-play" class="panel hidden">
+      <div class="meta">
+        <span class="chip" id="progress">Question 1 of 5</span>
+        <span class="chip" id="score">Score: 0</span>
+      </div>
+      <h2 class="question" id="question"></h2>
+      <div class="answers" id="answers" role="group" aria-labelledby="question"></div>
+      <div class="feedback" id="feedback">Choose one answer. Only the first press counts.</div>
+      <div class="actions" id="play-actions"></div>
+    </section>
+  </div>
+
+  <div id="help" class="overlay hidden" role="dialog" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title">How to play</h2>
+      <p>One answer per question. Next appears after you answer. Closing this help returns you to the same question, score, and locked choice.</p>
+      <p class="note">The group and gathering are fictional. A high score here does not make anyone a reading-club expert.</p>
+      <div class="actions">
+        <button class="btn primary" id="btn-close-help" type="button">Close help</button>
+        <button class="btn danger" id="btn-help-restart" type="button">Restart game</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="overlay hidden" role="dialog" aria-labelledby="result-title">
+    <div class="panel">
+      <h2 id="result-title"></h2>
+      <p id="result-body"></p>
+      <button class="btn primary" id="btn-play-again" type="button">Play again</button>
+    </div>
+  </div>
+
+  <script>
+    const QUESTIONS = [
+      {
+        text: "How often does this fictional club choose a book?",
+        choices: ["Once a year", "Once a month", "Every day"],
+        correct: 1,
+        feedback: "The club chooses one short book each month."
+      },
+      {
+        text: "What kind of book does the example club choose?",
+        choices: ["A short book", "Only dictionaries", "Only cookbooks"],
+        correct: 0,
+        feedback: "The fictional club chooses a short book."
+      },
+      {
+        text: "What should you bring to the practice gathering?",
+        choices: ["A sales pitch", "A ticket payment", "A question about the book"],
+        correct: 2,
+        feedback: "Bring a question and a passage you want to discuss."
+      },
+      {
+        text: "What does the website's main button do?",
+        choices: ["Takes a payment", "Opens the next gathering section", "Creates an account"],
+        correct: 1,
+        feedback: "It takes the visitor to the gathering details."
+      },
+      {
+        text: "Which description matches this project?",
+        choices: ["A fictional classroom exercise", "A confirmed real event", "A real booking service"],
+        correct: 0,
+        feedback: "The group and gathering are fictional."
+      }
+    ];
+    const LETTERS = ["A", "B", "C"];
+
+    const els = {
+      intro: document.getElementById("screen-intro"),
+      play: document.getElementById("screen-play"),
+      header: document.getElementById("header-actions"),
+      progress: document.getElementById("progress"),
+      score: document.getElementById("score"),
+      question: document.getElementById("question"),
+      answers: document.getElementById("answers"),
+      feedback: document.getElementById("feedback"),
+      playActions: document.getElementById("play-actions"),
+      help: document.getElementById("help"),
+      result: document.getElementById("result"),
+      resultTitle: document.getElementById("result-title"),
+      resultBody: document.getElementById("result-body"),
+      live: document.getElementById("live"),
+      playAgain: document.getElementById("btn-play-again")
+    };
+
+    function emptyPlayState() {
+      return {
+        screen: "play",
+        qIndex: 0,
+        score: 0,
+        selected: null,
+        phase: "choose",
+        helpOpen: false
+      };
+    }
+
+    let state = { screen: "intro", helpOpen: false };
+
+    function announce(text) {
+      els.live.textContent = text;
+    }
+
+    function startGame() {
+      state = emptyPlayState();
+      render();
+      announce("Question 1 of 5. Score 0. Choose an answer.");
+      focusFirstAnswer();
+    }
+
+    function restartGame() {
+      state = emptyPlayState();
+      render();
+      announce("Restarted. Question 1 of 5. Score 0.");
+      focusFirstAnswer();
+    }
+
+    function chooseAnswer(index) {
+      if (state.screen !== "play" || state.helpOpen) return;
+      if (state.phase !== "choose") return;
+      const q = QUESTIONS[state.qIndex];
+      state.selected = index;
+      if (index === q.correct) state.score += 1;
+      state.phase = "feedback";
+      render();
+      const result = index === q.correct ? "Correct. " : "Incorrect. ";
+      announce(result + q.feedback);
+      const next = els.playActions.querySelector("button");
+      if (next) next.focus();
+    }
+
+    function nextQuestion() {
+      if (state.helpOpen || state.phase !== "feedback") return;
+      if (state.qIndex >= QUESTIONS.length - 1) {
+        state.phase = "result";
+        render();
+        announce(els.resultTitle.textContent + " " + els.resultBody.textContent);
+        els.playAgain.focus();
+        return;
+      }
+      state.qIndex += 1;
+      state.selected = null;
+      state.phase = "choose";
+      render();
+      announce("Question " + (state.qIndex + 1) + " of 5. Choose an answer.");
+      focusFirstAnswer();
+    }
+
+    function focusFirstAnswer() {
+      const first = els.answers.querySelector("button");
+      if (first) first.focus();
+    }
+
+    function resultCopy(score) {
+      const outOf = "You scored " + score + " out of 5.";
+      if (score === 5) {
+        return {
+          title: "You scored 5 out of 5",
+          body: outOf + " You remembered the fictional club's practice rules. Play again starts a fresh round at question 1."
+        };
+      }
+      if (score === 0) {
+        return {
+          title: "You scored 0 out of 5",
+          body: outOf + " Play again to try the five questions from the start. A low score here is only this round, not a real-world result."
+        };
+      }
+      return {
+        title: "You scored " + score + " out of 5",
+        body: outOf + " These questions describe a fictional classroom club. Play again resets the round to question 1 with zero points."
+      };
+    }
+
+    function renderHeader() {
+      els.header.innerHTML = "";
+      const home = document.createElement("a");
+      home.className = "btn";
+      home.href = "../../index.html";
+      home.textContent = "ATO Home";
+      els.header.append(home);
+      if (state.screen !== "play") return;
+      const help = document.createElement("button");
+      help.className = "btn";
+      help.type = "button";
+      help.textContent = "How to play";
+      help.addEventListener("click", () => {
+        state.helpOpen = true;
+        render();
+      });
+      const restart = document.createElement("button");
+      restart.className = "btn danger";
+      restart.type = "button";
+      restart.textContent = "Restart game";
+      restart.title = "Starts a fresh round at question 1 with zero points";
+      restart.addEventListener("click", restartGame);
+      els.header.append(help, restart);
+    }
+
+    function renderQuestion() {
+      const q = QUESTIONS[state.qIndex];
+      els.progress.textContent = "Question " + (state.qIndex + 1) + " of 5";
+      els.score.textContent = "Score: " + state.score;
+      els.question.textContent = q.text;
+      els.answers.innerHTML = "";
+
+      q.choices.forEach((label, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn answer";
+        const letter = document.createElement("span");
+        letter.className = "letter";
+        letter.textContent = LETTERS[i];
+        const text = document.createElement("span");
+        text.textContent = label;
+        btn.append(letter, text);
+
+        const locked = state.phase !== "choose" || state.helpOpen;
+        btn.disabled = locked;
+        btn.setAttribute("aria-pressed", state.selected === i ? "true" : "false");
+
+        if (state.phase === "feedback" && state.selected !== null) {
+          if (i === q.correct) {
+            btn.classList.add("correct");
+            const mark = document.createElement("span");
+            mark.className = "mark";
+            mark.textContent = "Correct";
+            btn.append(mark);
+          } else if (i === state.selected) {
+            btn.classList.add("wrong");
+            const mark = document.createElement("span");
+            mark.className = "mark";
+            mark.textContent = "Your answer";
+            btn.append(mark);
+          }
+        }
+
+        btn.addEventListener("click", () => chooseAnswer(i));
+        els.answers.append(btn);
+      });
+
+      els.feedback.className = "feedback";
+      els.playActions.innerHTML = "";
+
+      if (state.phase === "choose") {
+        els.feedback.textContent = "Choose one answer. Only the first press counts.";
+        return;
+      }
+
+      const correct = state.selected === q.correct;
+      els.feedback.classList.add(correct ? "good" : "bad");
+      els.feedback.textContent = (correct ? "Correct. " : "Incorrect. ") + q.feedback;
+
+      const next = document.createElement("button");
+      next.className = "btn primary";
+      next.type = "button";
+      next.textContent = "Next";
+      next.disabled = state.helpOpen;
+      next.addEventListener("click", nextQuestion);
+      els.playActions.append(next);
+    }
+
+    function renderResult() {
+      if (state.phase !== "result") {
+        els.result.classList.add("hidden");
+        return;
+      }
+      const copy = resultCopy(state.score);
+      els.resultTitle.textContent = copy.title;
+      els.resultBody.textContent = copy.body;
+      els.result.classList.remove("hidden");
+    }
+
+    function render() {
+      els.intro.classList.toggle("hidden", state.screen !== "intro");
+      els.play.classList.toggle("hidden", state.screen !== "play");
+      els.help.classList.toggle("hidden", !state.helpOpen);
+      renderHeader();
+      if (state.screen === "play") {
+        renderQuestion();
+        renderResult();
+      } else {
+        els.result.classList.add("hidden");
+        els.help.classList.add("hidden");
+      }
+    }
+
+    document.getElementById("btn-start").addEventListener("click", startGame);
+    document.getElementById("btn-play-again").addEventListener("click", startGame);
+    document.getElementById("btn-close-help").addEventListener("click", () => {
+      state.helpOpen = false;
+      render();
+    });
+    document.getElementById("btn-help-restart").addEventListener("click", restartGame);
+
+    render();
+  </script>
+</body>
+</html>

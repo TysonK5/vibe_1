@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Alien Tic-Tac-Toe</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --bg-2: #10182a;
+      --panel: #162038;
+      --line: #2c3d66;
+      --text: #e8f1ff;
+      --muted: #9eb0d0;
+      --cyan: #7ee0ff;
+      --magenta: #ff6b9d;
+      --green: #b6f2a0;
+      --gold: #ffd56a;
+      --focus: #fff4c2;
+      --cell: #0d1424;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: ui-rounded, "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1a2a55 0%, transparent 55%),
+        radial-gradient(900px 500px at 110% 10%, #3a1540 0%, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .wrap {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 48px;
+    }
+
+    header.app {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+    }
+    .title p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .alien-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #c6ff9a, #3d8a3a 60%, #163016);
+      box-shadow: 0 0 0 3px #1d3320, 0 0 18px #6dff6d55;
+      position: relative;
+    }
+    .alien-icon::before,
+    .alien-icon::after {
+      content: "";
+      position: absolute;
+      background: #0b140c;
+      border-radius: 50%;
+    }
+    .alien-icon::before {
+      width: 10px; height: 14px; left: 10px; top: 14px;
+    }
+    .alien-icon::after {
+      width: 10px; height: 14px; right: 10px; top: 14px;
+    }
+
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      min-height: 44px;
+    }
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .btn.primary {
+      background: linear-gradient(180deg, #2a8dff, #155fd6);
+      border-color: #7eb6ff;
+      font-weight: 700;
+    }
+    .btn.danger {
+      background: #3a1730;
+      border-color: var(--magenta);
+      color: #ffd0e1;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--bg-2) 88%, black);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 50px #0006;
+    }
+
+    .hidden { display: none !important; }
+
+    .intro h2 { margin: 0 0 8px; }
+    .intro p { color: var(--muted); }
+    .counters {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 20px;
+    }
+    .counters th, .counters td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .counters th { background: #1b2744; color: var(--cyan); }
+    .rules { color: var(--muted); margin: 0 0 18px; padding-left: 18px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .status {
+      min-height: 3.2em;
+      margin: 0 0 12px;
+      color: var(--cyan);
+      font-weight: 650;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 16px;
+      border: 2px solid var(--line);
+      background: var(--cell);
+      color: var(--text);
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 800;
+      min-height: 72px;
+    }
+    .cell.x { color: var(--cyan); }
+    .cell.o { color: var(--magenta); }
+    .cell.pending {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px #ffd56a44;
+    }
+    .cell.win {
+      background: #1d3a24;
+      border-color: var(--green);
+    }
+    .cell:disabled { cursor: default; }
+
+    .health {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .hp {
+      flex: 1;
+      background: #10192c;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .hp strong { display: block; color: var(--gold); }
+
+    .move {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+    }
+    .responses {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 520px) {
+      .responses { grid-template-columns: 1fr; }
+    }
+    .feedback {
+      background: #10192c;
+      border-left: 4px solid var(--cyan);
+      padding: 10px 12px;
+      border-radius: 8px;
+      min-height: 3.2em;
+      margin-bottom: 12px;
+    }
+    .feedback.bad { border-left-color: var(--magenta); }
+    .feedback.good { border-left-color: var(--green); }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: #070b14cc;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 20;
+    }
+    .overlay .panel { width: min(560px, 100%); }
+
+    .sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="app">
+      <div class="title">
+        <div class="alien-icon" aria-hidden="true"></div>
+        <div>
+          <h1>Alien Tic-Tac-Toe</h1>
+          <p>Win the battle. Claim the square.</p>
+        </div>
+      </div>
+      <div class="actions" id="header-actions">
+        <a class="btn" href="../../index.html">ATO Home</a>
+      </div>
+    </header>
+
+    <p class="sr" id="live" aria-live="polite"></p>
+
+    <section id="screen-intro" class="panel intro">
+      <h2>How to play</h2>
+      <p>This is a solo board. You pick every square. A short alien battle decides whether that square becomes <strong>X</strong> (you) or <strong>O</strong> (the alien).</p>
+      <ul class="rules">
+        <li>Choose an empty square. The board locks until that battle ends.</li>
+        <li>Both sides start with 2 health. One response is accepted per exchange.</li>
+        <li>Correct response: the alien loses 1 health. Wrong response: you lose 1 health.</li>
+        <li>Three X in a line wins the board. Three O in a line loses. A full board with no line is a draw.</li>
+        <li>The alien does not take a second square after a battle. Restart game clears the whole board.</li>
+      </ul>
+      <table class="counters">
+        <thead>
+          <tr><th>Alien shows</th><th>Correct response</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Laser</td><td>Shield</td></tr>
+          <tr><td>Shield</td><td>Blast</td></tr>
+          <tr><td>Claw</td><td>Dodge</td></tr>
+        </tbody>
+      </table>
+      <button class="btn primary" id="btn-start" type="button">Start</button>
+    </section>
+
+    <section id="screen-play" class="hidden">
+      <p class="status" id="status"></p>
+      <div class="layout">
+        <div class="panel">
+          <div class="board" id="board"></div>
+        </div>
+        <div class="panel" id="battle-panel">
+          <h2 id="battle-title">Choose a square</h2>
+          <div class="health">
+            <div class="hp"><span>You</span><strong id="hp-you">You: 2 of 2</strong></div>
+            <div class="hp"><span>Alien</span><strong id="hp-alien">Alien: 2 of 2</strong></div>
+          </div>
+          <p class="move" id="alien-move"></p>
+          <div class="responses" id="responses">
+            <button class="btn" data-response="Shield" type="button">Shield</button>
+            <button class="btn" data-response="Blast" type="button">Blast</button>
+            <button class="btn" data-response="Dodge" type="button">Dodge</button>
+          </div>
+          <div class="feedback" id="feedback"></div>
+          <div class="actions" id="battle-actions"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="help" class="overlay hidden" role="dialog" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title">How to play</h2>
+      <table class="counters">
+        <thead>
+          <tr><th>Alien shows</th><th>Correct response</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Laser</td><td>Shield</td></tr>
+          <tr><td>Shield</td><td>Blast</td></tr>
+          <tr><td>Claw</td><td>Dodge</td></tr>
+        </tbody>
+      </table>
+      <p>Closing this help is not a move. Restart game clears the whole board.</p>
+      <div class="actions">
+        <button class="btn primary" id="btn-close-help" type="button">Close help</button>
+        <button class="btn danger" id="btn-help-restart" type="button">Restart game</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="overlay hidden" role="dialog" aria-labelledby="result-title">
+    <div class="panel">
+      <h2 id="result-title"></h2>
+      <p id="result-body"></p>
+      <button class="btn primary" id="btn-play-again" type="button">Play again</button>
+    </div>
+  </div>
+
+  <script>
+    const LINES = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+    const ALIEN_MOVES = ["Laser", "Shield", "Claw"];
+    const COUNTERS = { Laser: "Shield", Shield: "Blast", Claw: "Dodge" };
+    const CELL_NAMES = [
+      "Row 1, column 1", "Row 1, column 2", "Row 1, column 3",
+      "Row 2, column 1", "Row 2, column 2", "Row 2, column 3",
+      "Row 3, column 1", "Row 3, column 2", "Row 3, column 3"
+    ];
+
+    const els = {
+      intro: document.getElementById("screen-intro"),
+      play: document.getElementById("screen-play"),
+      header: document.getElementById("header-actions"),
+      board: document.getElementById("board"),
+      status: document.getElementById("status"),
+      battleTitle: document.getElementById("battle-title"),
+      hpYou: document.getElementById("hp-you"),
+      hpAlien: document.getElementById("hp-alien"),
+      alienMove: document.getElementById("alien-move"),
+      responses: document.getElementById("responses"),
+      feedback: document.getElementById("feedback"),
+      battleActions: document.getElementById("battle-actions"),
+      help: document.getElementById("help"),
+      result: document.getElementById("result"),
+      resultTitle: document.getElementById("result-title"),
+      resultBody: document.getElementById("result-body"),
+      live: document.getElementById("live")
+    };
+
+    function emptyPlayState() {
+      return {
+        screen: "play",
+        board: Array(9).fill(null),
+        pending: null,
+        playerHp: 2,
+        alienHp: 2,
+        exchange: 0,
+        phase: "idle",
+        last: null,
+        boardResult: null,
+        winLine: null,
+        helpOpen: false
+      };
+    }
+
+    let state = { screen: "intro", helpOpen: false };
+
+    function announce(text) {
+      els.live.textContent = text;
+    }
+
+    function winningLine(board) {
+      for (const line of LINES) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return { mark: board[a], line };
+        }
+      }
+      return null;
+    }
+
+    function alienMove() {
+      return ALIEN_MOVES[state.exchange % 3];
+    }
+
+    function startGame() {
+      state = emptyPlayState();
+      render();
+      announce("New empty board. Choose an empty square.");
+    }
+
+    function restartGame() {
+      state = emptyPlayState();
+      render();
+      announce("Restarted. The whole board is empty. Choose an empty square.");
+    }
+
+    function chooseCell(index) {
+      if (state.screen !== "play" || state.helpOpen || state.boardResult) return;
+      if (state.phase !== "idle") return;
+      if (state.board[index]) return;
+      state.pending = index;
+      state.playerHp = 2;
+      state.alienHp = 2;
+      state.exchange = 0;
+      state.phase = "choose";
+      state.last = null;
+      render();
+      announce(CELL_NAMES[index] + " selected. Alien shows " + alienMove() + ".");
+    }
+
+    function chooseResponse(response) {
+      if (state.helpOpen || state.phase !== "choose") return;
+      const move = alienMove();
+      const correct = COUNTERS[move] === response;
+      if (correct) state.alienHp -= 1;
+      else state.playerHp -= 1;
+      state.last = { move, response, correct };
+      if (state.alienHp <= 0) {
+        resolveBattle("X");
+        return;
+      }
+      if (state.playerHp <= 0) {
+        resolveBattle("O");
+        return;
+      }
+      state.phase = "feedback";
+      render();
+      announce((correct ? "Correct. " : "Incorrect. ") + (correct ? "Alien" : "You") + " lose 1 health.");
+    }
+
+    function nextExchange() {
+      if (state.helpOpen || state.phase !== "feedback") return;
+      if (state.playerHp <= 0 || state.alienHp <= 0) return;
+      state.exchange += 1;
+      state.phase = "choose";
+      state.last = null;
+      render();
+      announce("Next exchange. Alien shows " + alienMove() + ".");
+    }
+
+    function resolveBattle(mark) {
+      const cell = state.pending;
+      state.board[cell] = mark;
+      const win = winningLine(state.board);
+      if (win) {
+        state.boardResult = win.mark === "X" ? "x-win" : "o-win";
+        state.winLine = win.line;
+        state.phase = "board-over";
+      } else if (state.board.every(Boolean)) {
+        state.boardResult = "draw";
+        state.winLine = null;
+        state.phase = "board-over";
+      } else {
+        state.phase = "summary";
+      }
+      render();
+      if (state.boardResult) {
+        announce(els.resultTitle.textContent);
+      } else {
+        announce((mark === "X" ? "Battle won. X" : "Battle lost. O") + " placed on " + CELL_NAMES[cell] + ".");
+      }
+    }
+
+    function returnToBoard() {
+      if (state.helpOpen || state.phase !== "summary") return;
+      state.pending = null;
+      state.phase = "idle";
+      state.last = null;
+      render();
+      announce("Back to the board. Choose an empty square.");
+    }
+
+    function renderHeader() {
+      els.header.innerHTML = "";
+      const home = document.createElement("a");
+      home.className = "btn";
+      home.href = "../../index.html";
+      home.textContent = "ATO Home";
+      els.header.append(home);
+      if (state.screen !== "play") return;
+      const help = document.createElement("button");
+      help.className = "btn";
+      help.type = "button";
+      help.textContent = "How to play";
+      help.addEventListener("click", () => {
+        state.helpOpen = true;
+        render();
+      });
+      const restart = document.createElement("button");
+      restart.className = "btn danger";
+      restart.type = "button";
+      restart.textContent = "Restart game";
+      restart.title = "Clears the whole board and any battle in progress";
+      restart.addEventListener("click", restartGame);
+      els.header.append(help, restart);
+    }
+
+    function renderBoard() {
+      els.board.innerHTML = "";
+      state.board.forEach((mark, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cell";
+        if (mark === "X") btn.classList.add("x");
+        if (mark === "O") btn.classList.add("o");
+        if (state.pending === i && state.phase !== "idle") btn.classList.add("pending");
+        if (state.winLine && state.winLine.includes(i)) btn.classList.add("win");
+        btn.textContent = mark || "";
+        const filled = mark ? (mark === "X" ? "X, you" : "O, alien") : "empty";
+        btn.setAttribute("aria-label", CELL_NAMES[i] + ", " + filled);
+        const locked = state.phase !== "idle" || state.helpOpen || state.boardResult || Boolean(mark);
+        btn.disabled = locked;
+        btn.addEventListener("click", () => chooseCell(i));
+        els.board.append(btn);
+      });
+    }
+
+    function renderBattle() {
+      els.hpYou.textContent = "You: " + (state.phase === "idle" ? "—" : state.playerHp + " of 2");
+      els.hpAlien.textContent = "Alien: " + (state.phase === "idle" ? "—" : state.alienHp + " of 2");
+
+      const responseBtns = [...els.responses.querySelectorAll("[data-response]")];
+      const choosing = state.phase === "choose" && !state.helpOpen;
+      responseBtns.forEach((btn) => {
+        btn.disabled = !choosing;
+      });
+
+      els.feedback.className = "feedback";
+      els.battleActions.innerHTML = "";
+
+      if (state.phase === "idle") {
+        els.battleTitle.textContent = "Choose a square";
+        els.alienMove.textContent = "Pick an empty cell on the board to start a battle.";
+        els.feedback.textContent = "No battle in progress.";
+        return;
+      }
+
+      const cellName = CELL_NAMES[state.pending];
+      els.battleTitle.textContent = "Battle for " + cellName;
+
+      if (state.phase === "choose") {
+        els.alienMove.textContent = "Alien shows " + alienMove() + ".";
+        els.feedback.textContent = "Choose one response. Only the first press counts.";
+      }
+
+      if (state.phase === "feedback" && state.last) {
+        const { move, response, correct } = state.last;
+        els.alienMove.textContent = "Alien showed " + move + ".";
+        els.feedback.textContent = correct
+          ? response + " counters " + move + ". Alien loses 1 health."
+          : response + " does not counter " + move + ". You lose 1 health.";
+        els.feedback.classList.add(correct ? "good" : "bad");
+        const next = document.createElement("button");
+        next.className = "btn primary";
+        next.type = "button";
+        next.textContent = "Next exchange";
+        next.disabled = state.helpOpen;
+        next.addEventListener("click", nextExchange);
+        els.battleActions.append(next);
+      }
+
+      if (state.phase === "summary" || state.phase === "board-over") {
+        const mark = state.board[state.pending];
+        els.alienMove.textContent = mark === "X" ? "Battle won." : "Battle lost.";
+        els.feedback.textContent = mark === "X"
+          ? "X is placed on " + cellName + ". The alien does not take another square."
+          : "O is placed on " + cellName + ". The alien claimed this square only.";
+        els.feedback.classList.add(mark === "X" ? "good" : "bad");
+        if (state.phase === "summary") {
+          const back = document.createElement("button");
+          back.className = "btn primary";
+          back.type = "button";
+          back.textContent = "Return to board";
+          back.disabled = state.helpOpen;
+          back.addEventListener("click", returnToBoard);
+          els.battleActions.append(back);
+        }
+      }
+    }
+
+    function renderResult() {
+      if (state.boardResult === "x-win") {
+        els.result.classList.remove("hidden");
+        els.resultTitle.textContent = "You won the board";
+        els.resultBody.textContent = "Three X marks in a line. That is a board win, not only a battle win.";
+      } else if (state.boardResult === "o-win") {
+        els.result.classList.remove("hidden");
+        els.resultTitle.textContent = "The aliens won";
+        els.resultBody.textContent = "Three O marks in a line. Play again for a fresh empty board.";
+      } else if (state.boardResult === "draw") {
+        els.result.classList.remove("hidden");
+        els.resultTitle.textContent = "Draw";
+        els.resultBody.textContent = "The board is full and neither side has a line.";
+      } else {
+        els.result.classList.add("hidden");
+      }
+    }
+
+    function renderStatus() {
+      if (state.phase === "idle") els.status.textContent = "Choose an empty square.";
+      else if (state.phase === "choose") els.status.textContent = "Board locked. Answer the alien.";
+      else if (state.phase === "feedback") els.status.textContent = "Exchange resolved. Continue only with Next exchange.";
+      else if (state.phase === "summary") els.status.textContent = "Battle finished. Return to the board to pick another square.";
+      else if (state.boardResult) els.status.textContent = "Board finished.";
+    }
+
+    function render() {
+      els.intro.classList.toggle("hidden", state.screen !== "intro");
+      els.play.classList.toggle("hidden", state.screen !== "play");
+      els.help.classList.toggle("hidden", !state.helpOpen);
+      renderHeader();
+      if (state.screen === "play") {
+        renderBoard();
+        renderBattle();
+        renderStatus();
+        renderResult();
+      } else {
+        els.result.classList.add("hidden");
+        els.help.classList.add("hidden");
+      }
+    }
+
+    document.getElementById("btn-start").addEventListener("click", startGame);
+    document.getElementById("btn-play-again").addEventListener("click", startGame);
+    document.getElementById("btn-close-help").addEventListener("click", () => {
+      state.helpOpen = false;
+      render();
+    });
+    document.getElementById("btn-help-restart").addEventListener("click", restartGame);
+    els.responses.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-response]");
+      if (!btn) return;
+      chooseResponse(btn.getAttribute("data-response"));
+    });
+
+    render();
+  </script>
+</body>
+</html>

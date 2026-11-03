@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATO All Things Open</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #141b2f;
+      --line: #2a3558;
+      --text: #f4f6fb;
+      --muted: #a9b4d0;
+      --orange: #ff6a2b;
+      --orange-2: #ff8a4d;
+      --focus: #ffe08a;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 480px at 0% 0%, #3a1d12 0%, transparent 55%),
+        radial-gradient(800px 420px at 100% 0%, #1c2d66 0%, transparent 50%),
+        var(--bg);
+      line-height: 1.45;
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 72px;
+    }
+
+    .hero {
+      margin-bottom: 36px;
+    }
+    .kicker {
+      color: var(--orange);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      margin: 0 0 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .hero p {
+      max-width: 44rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 14px 0 0;
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 22px;
+    }
+
+    .tile {
+      background: color-mix(in srgb, var(--card) 92%, black);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px #0005;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .thumb {
+      height: 170px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      isolation: isolate;
+    }
+    .thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, #0c1222 100%);
+    }
+    .alien-thumb { background: radial-gradient(circle at 50% 30%, #315a2a, #10182a 70%); }
+    .quiz-thumb { background: radial-gradient(circle at 50% 30%, #2a3f7a, #10182a 70%); }
+    .dodge-thumb { background: radial-gradient(circle at 50% 30%, #7ec8d4, #3d9aab 70%); }
+
+    .mini-board {
+      display: grid;
+      grid-template-columns: repeat(3, 28px);
+      gap: 6px;
+      z-index: 1;
+    }
+    .mini-board span {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #0d1424;
+      border: 1px solid #7ee0ff66;
+      color: #7ee0ff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    .qmark {
+      z-index: 1;
+      width: 84px;
+      height: 84px;
+      border-radius: 20px;
+      display: grid;
+      place-items: center;
+      font-size: 2.6rem;
+      font-weight: 800;
+      background: #1a2a55;
+      border: 2px solid #9db7ff;
+    }
+    .bird {
+      z-index: 1;
+      width: 54px;
+      height: 40px;
+      background: #f8d44c;
+      border: 3px solid #3b2a12;
+      border-radius: 50%;
+      position: relative;
+      box-shadow: 18px 6px 0 -14px #f08a2a;
+    }
+    .bird::before {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border: 2px solid #3b2a12;
+      border-radius: 50%;
+      right: 8px;
+      top: 8px;
+    }
+
+    .tile-body {
+      padding: 18px 18px 8px;
+    }
+    .tile-body h2 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+    }
+    .tile-body p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+    .play {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, var(--orange-2), var(--orange));
+      color: #1a0d08;
+      font-weight: 800;
+      text-decoration: none;
+      border: 0;
+    }
+    .md-block {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      padding: 14px 18px 18px;
+      min-width: 0;
+    }
+    .md-block header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .md-block h3 {
+      margin: 0;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--orange-2);
+    }
+    .md-block a, .md-block button {
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px 10px;
+      text-decoration: none;
+      font: inherit;
+      cursor: pointer;
+    }
+    .md-block pre {
+      margin: 0;
+      max-height: 280px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0a1020;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.78rem;
+      color: #d7e0f7;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="kicker">AI Agents &amp; Vibe Coding</p>
+      <h1>ATO All Things Open</h1>
+      <p>Project tiles from the workshop. Each tile is a game. The markdown under it is the spec used to build that game.</p>
+    </header>
+
+    <section class="tiles" aria-label="Projects">
+      <article class="tile">
+        <div class="thumb alien-thumb" aria-hidden="true">
+          <div class="mini-board">
+            <span>X</span><span></span><span>O</span>
+            <span></span><span>X</span><span></span>
+            <span>O</span><span></span><span>X</span>
+          </div>
+        </div>
+        <div class="tile-body">
+          <h2>Alien Tic-Tac-Toe</h2>
+          <p>Fight for each square. Win the battle to claim X.</p>
+          <a class="play" href="games/alien-tic-tac-toe/index.html">Play game</a>
+        </div>
+        <div class="md-block">
+          <header>
+            <h3>Markdown used to create this game</h3>
+            <span>
+              <a href="games/alien-tic-tac-toe/PROMPT.md">Open .md</a>
+              <button type="button" data-copy="alien-md">Copy</button>
+            </span>
+          </header>
+          <pre id="alien-md"># Alien Tic-Tac-Toe
+
+Build a browser game: Alien Tic-Tac-Toe.
+Recipe: Alien Tic-Tac-Toe (featured class example).
+One round: start → play → result → restart.
+
+## Brief
+
+- Title and theme: Alien Tic-Tac-Toe — solo board + short alien battles
+- Player goal: Get three X marks in a row, column, or diagonal
+- Main action: Click an empty square, then pick Shield / Blast / Dodge
+- How a round ends: X line (you win), O line (aliens win), or full board with no line (draw)
+- Round length: Nine battles at most; each battle is 2–3 exchanges
+- Out of scope: Timers, sound, logins, random alien moves, extra art packs
+
+One-sentence game: The player fights for each square to earn X marks before the aliens complete a line of O.
+
+## Rules
+
+This is a solo three-by-three board. You choose every square. A short battle determines who receives it.
+
+1. Start with an empty board.
+2. Select an empty cell. That cell becomes the pending battle location and the whole board locks.
+3. Win the battle to put **X** in the selected cell. Lose the battle to put **O** there.
+4. There is no automatic opponent move. One finished battle fills exactly one cell.
+5. Three X marks in any row, column, or diagonal wins the board. Three O marks loses it. A full board with neither line is a draw.
+6. If the board is not finished, return to it and choose another empty cell.
+7. **Restart game** abandons the whole board immediately, including any battle in progress.
+
+## Battle
+
+Every battle starts with 2 player health and 2 alien health. Show health as text: “You: 2 of 2” and “Alien: 2 of 2”.
+
+The alien announces its move. You choose one of three responses:
+
+| Alien shows | Correct response | Result if correct |
+| --- | --- | --- |
+| Laser | Shield | Alien loses 1 health |
+| Shield | Blast | Alien loses 1 health |
+| Claw | Dodge | Alien loses 1 health |
+
+Any other response costs the player 1 health. Exactly one side loses exactly one point per accepted response.
+
+First version sequence: Laser → Shield → Claw, restarting at Laser for every new battle. Correct answers: Shield → Blast → Dodge.
+
+After a response, disable all response buttons and show what happened. If both sides still have health, show **Next exchange**. If the alien reaches zero health, the battle ends with a win. If the player reaches zero, it ends with a loss.
+
+Win / lose / draw must be visible on screen.
+No login, no server, no leaderboard.
+Single HTML/CSS/JS page is fine.
+After a round, Play again must reset all round state.</pre>
+        </div>
+      </article>
+
+      <article class="tile">
+        <div class="thumb quiz-thumb" aria-hidden="true">
+          <div class="qmark">?</div>
+        </div>
+        <div class="tile-body">
+          <h2>Five-question quiz</h2>
+          <p>Answer five questions, see the score, play again.</p>
+          <a class="play" href="games/quiz/index.html">Play game</a>
+        </div>
+        <div class="md-block">
+          <header>
+            <h3>Markdown used to create this game</h3>
+            <span>
+              <a href="games/quiz/PROMPT.md">Open .md</a>
+              <button type="button" data-copy="quiz-md">Copy</button>
+            </span>
+          </header>
+          <pre id="quiz-md"># Five-question quiz
+
+Build a browser game: Riverbend Club Quiz.
+Recipe: five-question quiz.
+One round: start → play → result → restart.
+Main control: answer.
+
+## Brief
+
+- Player answers one question at a time, sees feedback, then Next
+- Five questions, then score out of five and Play again
+- One answer scores once
+- No login, no server, no leaderboard
+- Single HTML/CSS/JS page is fine
+- After a round, Play again must reset all round state
+
+Win / lose / draw must be visible on screen as a final score.</pre>
+        </div>
+      </article>
+
+      <article class="tile">
+        <div class="thumb dodge-thumb" aria-hidden="true">
+          <div class="bird"></div>
+        </div>
+        <div class="tile-body">
+          <h2>Flappy Bird</h2>
+          <p>Tap or press Space to flap through the pipes.</p>
+          <a class="play" href="games/space-dodger/index.html">Play game</a>
+        </div>
+        <div class="md-block">
+          <header>
+            <h3>Markdown used to create this game</h3>
+            <span>
+              <a href="games/space-dodger/PROMPT.md">Open .md</a>
+              <button type="button" data-copy="dodge-md">Copy</button>
+            </span>
+          </header>
+          <pre id="dodge-md"># Flappy Bird
+
+Build a browser game: Flappy Bird.
+Recipe: one-button tap-to-flap (from the space dodger).
+One round: start → play → result → restart.
+Main control: tap, click, or Space to flap.
+
+## Brief
+
+- A small bird falls unless the player taps a visible Flap control, taps the playfield, or presses Space
+- Each press is one flap. Holding does not keep the bird up
+- Green pipes approach with a gap. Passing one pipe earns one point, once
+- A visible collision with a pipe or the ground ends the round and shows the score and Play again
+- The top of the sky stops the bird; only pipes and the ground end the round
+- The first flap starts the round from a waiting pose
+- Replay resets bird position, pipes, score, and movement
+- Instructions hold the game idle before Start
+- No login, no server, no leaderboard
+- Single HTML/CSS/JS page is fine
+- After a round, Play again must reset all round state</pre>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll("[data-copy]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const pre = document.getElementById(btn.getAttribute("data-copy"));
+        const text = pre ? pre.textContent : "";
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = "Copied";
+          setTimeout(() => { btn.textContent = "Copy"; }, 1500);
+        } catch (err) {
+          btn.textContent = "Select to copy";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
